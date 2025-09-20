@@ -1,7 +1,8 @@
 import time
 import random
 from adb_utils import adb_tap, capture_screen
-from image_utils import wait_for_template, find_template
+from image_utils import wait_for_template, find_template, find_town_hall
+from gemini_utils import get_deployment_coords_from_gemini
 from coordinates import COORDS
 
 def jitter_coord(x, y, jitter_range=10):
@@ -18,6 +19,31 @@ def get_drop_coords(number=1):
     rage2_left_up = (1400, 345)
     rage2_left_down = (1400, 570)
 
+
+    if number == 4: # Gemini AI Strategy
+        print("Using attack strategy 4: Gemini AI.")
+        town_hall_coords = find_town_hall()
+        if town_hall_coords:
+            # The screen was already captured by find_town_hall (via find_template)
+            ai_coords = get_deployment_coords_from_gemini("screen.png", town_hall_coords)
+
+            if ai_coords and len(ai_coords) >= 3:
+                print("Successfully retrieved AI coordinates. Using them for deployment.")
+                # The rest of the attack function expects left, right, mid.
+                # We can simulate this from the list of points from the AI.
+                left_point = ai_coords[0]
+                right_point = ai_coords[-1]
+                mid_point = ai_coords[len(ai_coords) // 2]
+
+                left_x, left_y = left_point['x'], left_point['y']
+                right_x, right_y = right_point['x'], right_point['y']
+                mid_x, mid_y = mid_point['x'], mid_point['y']
+
+                # We still need to return the rage coordinates for the rest of the function
+                return left_x, left_y, right_x, right_y, mid_x, mid_y, rage_mid, rage_top, rage_bot, rage2_right_up, rage2_right_down
+
+        print("Gemini AI strategy failed or Town Hall not found. Falling back to strategy 2.")
+        return get_drop_coords(number=2)
 
     if number == 1:
         print("Using attack strategy 1.")
@@ -171,7 +197,7 @@ def drop_attack():
 
 def attack():
     print("Starting attack sequence...")
-    attack_strat = random.randint(2, 3)
+    attack_strat = random.choice([2, 3, 4])  # Randomly choose between old strategies and the new Gemini one
     left_x, left_y, right_x, right_y, mid_x, mid_y, rage_mid, rage_top, rage_bot, rage2_right_up, rage2_right_down = get_drop_coords(attack_strat)
     
     next_btn = wait_for_template("templates/next_button.png", timeout=15)
