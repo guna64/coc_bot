@@ -144,3 +144,25 @@ def wait_for_template(template_path, timeout=3, threshold=0.85):
 #         return percentage
 #     else:
 #         return None
+
+def find_town_hall(threshold=0.7):
+    """
+    Searches for the Town Hall on the screen.
+    Uses a lower threshold because the Town Hall can look different at various levels.
+    """
+    print("Searching for Town Hall...")
+    template_path = os.path.join(os.path.dirname(__file__), "../templates/town_hall.png")
+
+    # A real image will have some size, an empty file will be 0.
+    # This check warns the user if they haven't replaced the placeholder.
+    if not os.path.exists(template_path) or os.path.getsize(template_path) == 0:
+        print("Warning: Town Hall template is a placeholder or missing. Please replace 'town_hall.png' with a real image.")
+        return None
+
+    coords = find_template(template_path, threshold)
+    if coords:
+        print(f"Town Hall found at: {coords}")
+        return coords
+    else:
+        print("Town Hall not found.")
+        return None
